@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-generic-app
+  template:
+    metadata:
+      labels:
+        app: my-generic-app
+    spec:
+      containers:
+      - name: app-container
+        image: kiyoboy/loadbalancer:1.0
+        imagePullPolicy: Never # Tells Minikube to use our local Docker image
+        ports:
+        - containerPort: 8080
+        envFrom:
+        - configMapRef:
+            name: app-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-cluster-ip
+spec:
+  selector:
+    app: my-generic-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

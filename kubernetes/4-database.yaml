@@ -1,0 +1,40 @@
+# 4-database.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres-db
+spec:
+  replicas: 1 # We only want ONE master database, not 3!
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine # The official Postgres Docker recipe
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: "admin"
+        - name: POSTGRES_PASSWORD
+          value: "supersecretpassword"
+        - name: POSTGRES_DB
+          value: "my_app_db"
+---
+# The Service so your 3 Node.js servers can find the database
+apiVersion: v1
+kind: Service
+metadata:
+  name: database-service
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
