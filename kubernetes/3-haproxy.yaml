@@ -12,12 +12,23 @@ data:
       timeout connect 5000ms
       timeout client 50000ms
       timeout server 50000ms
+    resolvers kubernetes
+      nameserver dns1 10.96.0.10:53
+      resolve_retries 3
+      timeout resolve 1s
+      timeout retry   1s
+      hold other      30s
+      hold refused    30s
+      hold nxdomain   30s
+      hold timeout    30s
+      hold valid      5s
+      accepted_payload_size 8192
     frontend http_front
       bind *:80
       default_backend app_back
     backend app_back
       balance roundrobin
-      server app-servers app-cluster-ip:80 check 
+      server-template app- 3 app-headless-service.default.svc.cluster.local:8080 check resolvers kubernetes init-addr none 
 ---
 apiVersion: apps/v1
 kind: Deployment
